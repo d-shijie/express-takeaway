@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken')
 const db = require('../db/index')
 const Account = db.accountModel
+const User = db.userModel
 const Op = db.Sequelize.Op
 const { JWT_KEY } = require('../config/jwt')
 
@@ -44,7 +45,6 @@ exports.login = async (req, res) => {
     res.status(400).send('参数缺失')
     return
   }
-
   Account.findOne({
     where: {
       username: username
@@ -54,18 +54,24 @@ exports.login = async (req, res) => {
       res.status(400).send('用户不存在')
       return
     }
- 
     if (user.dataValues.username === username && user.dataValues.password === password) {
-      const token = jwt.sign({id:user.dataValues.userId}, JWT_KEY, { expiresIn: '2 days' })
-      res.status(200).send({
-        code: 200,
-        data: {
-          token,
+      const userId = user.dataValues.userId
+      const token = jwt.sign({ id: userId }, JWT_KEY, { expiresIn: '2 days' })
+      User.findOne({
+        where: {
+          userId
         }
+      }).then(userInfo => {
+        res.status(200).send({
+          code: 200,
+          data: {
+            userInfo,
+            token,
+          }
+        })
       })
     } else {
       res.status(400).send('密码错误')
-
     }
   })
 
