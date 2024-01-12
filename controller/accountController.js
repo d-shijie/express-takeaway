@@ -4,7 +4,10 @@ const Account = db.accountModel
 const User = db.userModel
 const Op = db.Sequelize.Op
 const { JWT_KEY } = require('../config/jwt')
+const redis=require('../middleware/redis')
+const tokens = {
 
+}
 exports.register = (req, res) => {
   const { username, password } = req.body
   if (!username || !password) {
@@ -40,6 +43,7 @@ exports.register = (req, res) => {
 
 }
 exports.login = async (req, res) => {
+  
   const { username, password } = req.body
   if (!username || !password) {
     res.status(400).send('参数缺失')
@@ -57,6 +61,15 @@ exports.login = async (req, res) => {
     if (user.dataValues.username === username && user.dataValues.password === password) {
       const userId = user.dataValues.userId
       const token = jwt.sign({ id: userId }, JWT_KEY, { expiresIn: '2 days' })
+      if (tokens[userId]) {
+        res.status(500).send('用户已登录')
+        return
+      }
+      tokens[userId] = token
+      redis.set(userId,token)
+      redis.get(userId,(data)=>{
+        console.log(data);
+      })
       User.findOne({
         where: {
           userId
@@ -77,6 +90,14 @@ exports.login = async (req, res) => {
 
 }
 exports.logout = (req, res) => {
+  const { userId } = req.body
+  if (!userId) {
+    res.status(400).send({
+      message: '缺失参数'
+    })
+    return
+  }
+  delete tokens[userId]
 
 }
 
