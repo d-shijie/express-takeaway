@@ -22,26 +22,26 @@ exports.create = (req, res) => {
     userId: req.body.userId,
   };
   User.findOne({
-    where:{userId}
-  }).then(data=>{
-    if(data){
+    where: { userId }
+  }).then(data => {
+    if (data) {
       res.status(500).send({
         message: "用户已存在"
       });
       return;
     }
     User.create(user)
-    .then(data => {
-      res.send(data);
-    })
-    .catch(err => {
-      res.status(500).send({
-        message:
-          err.message || "创建失败"
+      .then(data => {
+        res.send(data);
+      })
+      .catch(err => {
+        res.status(500).send({
+          message:
+            err.message || "创建失败"
+        });
       });
-    });
   })
-  
+
 };
 exports.update = (req, res) => {
   const { userId } = req.body
@@ -65,6 +65,29 @@ exports.update = (req, res) => {
     })
   })
 
+}
+
+exports.remove = (req, res) => {
+  const userId = req.query.userId;
+  User.destroy({
+    where: { userId }
+  })
+    .then(num => {
+      if (num[0] === 0) {
+        res.status(200).send({
+          message: "删除成功"
+        });
+      } else {
+        res.status(500).send({
+          message: `删除失败。`
+        });
+      }
+    })
+    .catch(err => {
+      res.status(500).send({
+        message: err||'服务器错误'
+      });
+    });
 }
 exports.getUserInfo = (req, res) => {
   const { userId } = req.query
