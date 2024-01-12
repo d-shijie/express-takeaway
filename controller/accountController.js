@@ -4,10 +4,8 @@ const Account = db.accountModel
 const User = db.userModel
 const Op = db.Sequelize.Op
 const { JWT_KEY } = require('../config/jwt')
-const redis=require('../middleware/redis')
-const tokens = {
+const tokens=require('../config/token')
 
-}
 exports.register = (req, res) => {
   const { username, password } = req.body
   if (!username || !password) {
@@ -66,10 +64,7 @@ exports.login = async (req, res) => {
         return
       }
       tokens[userId] = token
-      redis.set(userId,token)
-      redis.get(userId,(data)=>{
-        console.log(data);
-      })
+
       User.findOne({
         where: {
           userId
@@ -98,6 +93,8 @@ exports.logout = (req, res) => {
     return
   }
   delete tokens[userId]
-
+  res.status(200).send({
+    message: '退出成功'
+  })
 }
 
