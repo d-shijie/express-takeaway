@@ -21,7 +21,16 @@ exports.create = (req, res) => {
     age: req.body.age,
     userId: req.body.userId,
   };
-  User.create(user)
+  User.findOne({
+    where:{userId}
+  }).then(data=>{
+    if(data){
+      res.status(500).send({
+        message: "用户已存在"
+      });
+      return;
+    }
+    User.create(user)
     .then(data => {
       res.send(data);
     })
@@ -31,8 +40,32 @@ exports.create = (req, res) => {
           err.message || "创建失败"
       });
     });
+  })
+  
 };
+exports.update = (req, res) => {
+  const { userId } = req.body
+  if (!userId) {
+    res.status(400).send({
+      message: '缺少用户ID'
+    })
+    return
+  }
+  User.update(req.body, {
+    where: { userId }
+  }).then((num) => {
+    if (num[0] === 1) {
+      res.status(200).send({
+        message: '更新成功'
+      })
+      return
+    }
+    res.status(500).send({
+      message: '更新失败'
+    })
+  })
 
+}
 exports.getUserInfo = (req, res) => {
   const { userId } = req.query
   if (!userId) {
@@ -40,19 +73,17 @@ exports.getUserInfo = (req, res) => {
       message: '缺少用户ID'
     })
   }
-  var condition = { userId: { [Op.like]: userId } } 
+  var condition = { userId: { [Op.like]: userId } }
   User.findOne(condition)
-  .then(result => {
-   
-    res.status(200).send({
-      data:result
-    })
-  })
-  .catch(err => {
-    res.status(500).send({
-      message: err.messa || "出错了"
-    })
-  })
+    .then(result => {
 
-
+      res.status(200).send({
+        data: result
+      })
+    })
+    .catch(err => {
+      res.status(500).send({
+        message: err.messa || "出错了"
+      })
+    })
 }

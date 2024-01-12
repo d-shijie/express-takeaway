@@ -21,7 +21,7 @@ app.set('view engine', 'html');
 const corsOptions={
   origin:'*'
 }
-app.use(authenticateJWT)
+// app.use(authenticateJWT)
 app.use(cors(corsOptions))
 app.use(morgan('dev'));
 app.use(express.json());
