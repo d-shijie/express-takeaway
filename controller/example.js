@@ -1,11 +1,11 @@
-const db=require('../db/index')
-const User=db.userModel
-const Op=db.Sequelize.Op
+const db = require('../db/index')
+const User = db.userModel
+const Op = db.Sequelize.Op
 
 // 创建并保存一条清单
 exports.create = (req, res) => {
-  const {name,userId,address,phone,email}=req.body
-  if (!name||!userId||!address||!phone||!email) {
+  const { name, userId, address, phone, email } = req.body
+  if (!name || !userId || !address || !phone || !email) {
     res.status(400).send({
       message: "缺少参数"
     });
@@ -17,10 +17,10 @@ exports.create = (req, res) => {
     gender: req.body.gender,
     address: req.body.address,
     description: req.body.description,
-    phone:req.body.phone,
-    email:req.body.email,
+    phone: req.body.phone,
+    email: req.body.email,
     age: req.body.age,
-    userId:req.body.userId,
+    userId: req.body.userId,
   };
   // 将清单保存到数据库
   User.create(user)
@@ -64,7 +64,7 @@ exports.findOne = (req, res) => {
     })
     .catch(err => {
       res.status(500).send({
-        message:  `查询第 ${id} 条清单时出错`
+        message: `查询第 ${id} 条清单时出错`
       });
     });
 };

@@ -2,7 +2,7 @@ const db = require('../db/index')
 const User = db.userModel
 const Op = db.Sequelize.Op
 
-
+const cities= require('../public/javascripts/city.json')
 exports.create = (req, res) => {
   const { name, userId, address, phone, email } = req.body
   if (!name || !userId || !address || !phone || !email) {
@@ -99,7 +99,6 @@ exports.getUserInfo = (req, res) => {
   var condition = { userId: { [Op.like]: userId } }
   User.findOne(condition)
     .then(result => {
-
       res.status(200).send({
         data: result
       })
@@ -109,4 +108,11 @@ exports.getUserInfo = (req, res) => {
         message: err.messa || "出错了"
       })
     })
+}
+exports.getCity=(req,res)=>{
+ 
+  res.status(200).send({
+    data:cities,
+    
+  })
 }
