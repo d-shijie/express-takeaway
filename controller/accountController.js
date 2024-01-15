@@ -4,8 +4,8 @@ const Account = db.accountModel
 const User = db.userModel
 const Op = db.Sequelize.Op
 const { JWT_KEY } = require('../config/jwt')
-const tokens=require('../config/token')
-
+const tokens = require('../config/token')
+const client = require('../middleware/redis')
 exports.register = (req, res) => {
   const { username, password } = req.body
   if (!username || !password) {
@@ -41,7 +41,6 @@ exports.register = (req, res) => {
 
 }
 exports.login = async (req, res) => {
-  
   const { username, password } = req.body
   if (!username || !password) {
     res.status(400).send('参数缺失')
@@ -59,16 +58,22 @@ exports.login = async (req, res) => {
     if (user.dataValues.username === username && user.dataValues.password === password) {
       const userId = user.dataValues.userId
       const token = jwt.sign({ id: userId }, JWT_KEY, { expiresIn: '2 days' })
-      if (tokens[userId]) {
-        res.status(500).send('用户已登录')
-        return
-      }
-      tokens[userId] = token
-
-      User.findOne({
-        where: {
-          userId
+    
+      client.connect().then(() => {
+        return client.exists(userId);
+      }).then(reply => {
+        if (reply === 1) {
+          res.status(500).send('用户已登录');
+          throw new Error('User Already Logged In');
+        } else {
+          return client.set(userId, token);
         }
+      }).then(() => {
+        return User.findOne({
+          where: {
+            userId
+          }
+        });
       }).then(userInfo => {
         res.status(200).send({
           code: 200,
@@ -76,13 +81,15 @@ exports.login = async (req, res) => {
             userInfo,
             token,
           }
-        })
-      })
+        });
+      }).catch(err => {
+        console.error(err);
+        res.status(500);
+      });
     } else {
       res.status(400).send('密码错误')
     }
   })
-
 }
 exports.logout = (req, res) => {
   const { userId } = req.body

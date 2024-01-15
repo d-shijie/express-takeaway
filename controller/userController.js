@@ -2,7 +2,7 @@ const db = require('../db/index')
 const User = db.userModel
 const Op = db.Sequelize.Op
 const cities= require('../public/javascripts/city.json')
-const ridis=require('../middleware/redis')
+
 exports.create = (req, res) => {
   const { name, userId, address, phone, email } = req.body
   if (!name || !userId || !address || !phone || !email) {
@@ -109,7 +109,7 @@ exports.getUserInfo = (req, res) => {
     })
 }
 exports.getCity=(req,res)=>{
-  console.log(ridis);
+ 
   res.status(200).send({
     data:cities,
   })
