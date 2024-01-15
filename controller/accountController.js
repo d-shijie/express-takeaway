@@ -58,10 +58,9 @@ exports.login = async (req, res) => {
     if (user.dataValues.username === username && user.dataValues.password === password) {
       const userId = user.dataValues.userId
       const token = jwt.sign({ id: userId }, JWT_KEY, { expiresIn: '2 days' })
-    
-      client.connect().then(() => {
-        return client.exists(userId);
-      }).then(reply => {
+   
+     
+      client.exists(userId).then(reply=>{
         if (reply === 1) {
           res.status(500).send('用户已登录');
           throw new Error('User Already Logged In');
@@ -86,6 +85,33 @@ exports.login = async (req, res) => {
         console.error(err);
         res.status(500);
       });
+      // client.connect().then(() => {
+      //   return client.exists(userId);
+      // }).then(reply => {
+      //   if (reply === 1) {
+      //     res.status(500).send('用户已登录');
+      //     throw new Error('User Already Logged In');
+      //   } else {
+      //     return client.set(userId, token);
+      //   }
+      // }).then(() => {
+      //   return User.findOne({
+      //     where: {
+      //       userId
+      //     }
+      //   });
+      // }).then(userInfo => {
+      //   res.status(200).send({
+      //     code: 200,
+      //     data: {
+      //       userInfo,
+      //       token,
+      //     }
+      //   });
+      // }).catch(err => {
+      //   console.error(err);
+      //   res.status(500);
+      // });
     } else {
       res.status(400).send('密码错误')
     }
@@ -99,9 +125,13 @@ exports.logout = (req, res) => {
     })
     return
   }
-  delete tokens[userId]
-  res.status(200).send({
-    message: '退出成功'
+  client.del(userId).then(()=>{
+    res.status(200).send({
+      message: '退出成功'
+    })
+  }).catch(()=>{
+    res.status(500);
   })
+ 
 }
 

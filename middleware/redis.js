@@ -5,6 +5,6 @@ const client=redis.createClient({
 client.on('error', (err) => {
   console.error("Error connecting to redis", err);
 })
-
+client.connect()
 
 module.exports=client
